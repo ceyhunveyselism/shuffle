@@ -7,6 +7,7 @@ let cmd = require('child_process');
 let http = require('https');
 let url = 'https://raw.githubusercontent.com/ceyhunveyselism/shuffle/main/shuffle.js'; 
 let path = 'shuffleUpdate.js'
+let gaming = true;
 
 let settings = {
     auto: "auto.shfl",
