@@ -3,9 +3,10 @@ let fs = require("fs");
 let chalk = require("chalk");
 let argumente = Array.from(process.argv.slice(2));
 let https = require('https');
-let download = require('download');
 let cmd = require('child_process');
-
+let http = require('http');
+let url = 'https://raw.githubusercontent.com/ceyhunveyselism/shuffle/main/shuffle.js'; 
+let path = 'shuffleUpdate.js'
 
 let settings = {
     auto: "auto.shfl",
@@ -17,24 +18,37 @@ let settings = {
     autoupdate: true
 }
 
-if(autoupdate) {
-    let url = 'https://github.com/ceyhunveyselism/shuffle/blob/main/shuffle.js';
-    download(url, "shuffleUpd.tmp").then(() => {
-        let current = fs.readFileSync("shuffle.js");
-        let git = fs.readFileSync("shuffleUpd.tmp");
-        if(current != git) {
-            let yn = prompt(chalk.green("[Autoupdate]" + " A new version of Shuffle is available. Do you want to install it? (Y/N)")).toLowerCase();
-            if(yn != "y") {
-                console.clear();
-                return;
-            } else {
-                let filename = __filename.slice(__dirname.length + 1);
-                fs.rmSync(filename);
-                fs.renameSync("shuffleUpd.tmp", filename);
-                cmd("node " + filename, { encoding: 'utf-8'})
-                process.exit();
+if(settings.autoupdate) {
+    console.log(chalk.green("Checking for updates..."));
+    let request = http.get(url, function(response) {
+        if(response.statusCode === 200) {
+            let file = fs.createWriteStream(path);
+            response.pipe(file);
+            if(fs.readFileSync(__filename.slice(__dirname.length + 1) != fs.readFileSync("shuffleUpdate.js"))) {
+                console.log(chalk.yellow("[Autoupdate]"), "A new version of shuffle has been released! Do you want to update your current shuffle?");
+                console.log("(This will delete your settings file.)");
+                let yn = prompt("(Y/N): ").toLowerCase();
+                if(yn == "n") {
+                    console.log("Aborted autoupdate.");
+                    return;
+                } else if(yn == "y") {
+                    fs.rmSync("set.shfl");
+                    fs.rmSync(__filename.slice(__dirname.length + 1));
+                    fs.renameSync("shuffleUpdate.js", __filename.slice(__dirname.length + 1));
+                    cmd("node " + __filename.slice(__dirname.length + 1));
+                    process.exit();
+                }
             }
         }
+
+        if(response.statusCode != 200) {
+            console.log(chalk.blue("[FATAL ERROR] Status code other then 200: Github is probably down. Check later for updates."));
+        }
+
+        request.setTimeout(15000, function() {
+            console.log(chalk.red("[ERROR] Failed to download shuffle.js from github: Aborting autoupdate check"));
+            request.destroy();
+        });
     });
 }
 
@@ -147,7 +161,7 @@ while(true) {
         continue;
     }
     if(shufflet == "clearhistory") {
-        let yn = prompt("Are you sure you want to completely erase all saved history? [Y/N]").toLowerCase();
+        let yn = prompt("Are you sure you want to completely erase all saved history? [Y/N]: ").toLowerCase();
         if(yn == "n") {
             console.log("Aborted.");
             prompt(chalk.green("--Press any key to continue--"))
