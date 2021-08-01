@@ -4,8 +4,8 @@ let chalk = require("chalk");
 let argumente = Array.from(process.argv.slice(2));
 let https = require('https');
 let cmd = require('child_process');
-let http = require('http');
-let url = 'http://raw.githubusercontent.com/ceyhunveyselism/shuffle/main/shuffle.js'; 
+let http = require('https');
+let url = 'https://raw.githubusercontent.com/ceyhunveyselism/shuffle/main/shuffle.js'; 
 let path = 'shuffleUpdate.js'
 
 let settings = {
